@@ -20,19 +20,20 @@ angular.module('myApp.view1', ['ngRoute', 'myApp.playerInfo'])
 
     $scope.input = "";
     $scope.submit = function(){
-        if($scope.messages[$scope.messages.length -1 ] === "What's your name?"){
+        $scope.messages.push("> " + $scope.input);
+        if($scope.messages[$scope.messages.length - 2] === "What's your name?"){
             $scope.potentialName = $scope.input;
             $scope.messages.push("Your name is " + $scope.potentialName + "? Are you sure? &lt;y/n&gt;");
             $scope.input = "";
             return;
         }
-        else if($scope.messages[$scope.messages.length -1 ] === "Your name is " + $scope.potentialName + "? Are you sure? &lt;y/n&gt;"){
+        else if($scope.messages[$scope.messages.length - 2] === "Your name is " + $scope.potentialName + "? Are you sure? &lt;y/n&gt;"){
             if($scope.input === 'y' || $scope.input === 'Y'){
                 playerInfo.name = $scope.potentialName;
                 $scope.messages.push("Alright. Welcome, " + playerInfo.name + ".");
                 $scope.input = "";
                 return;
-            } else if ($scope.input === 'n' || $scope.input === 'N'){
+            } else {
                 playerInfo.name = $scope.potentialName;
                 $scope.messages.push("Alright.");
                 $scope.messages.push("What's your name?");
