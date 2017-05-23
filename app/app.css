@@ -1,0 +1,78 @@
+
+html, body, .ng-scope, .full-area {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+}
+
+.img-container {
+    max-height: 100%;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+    top: 0;
+    left: 0;
+}
+
+.back-img {
+    max-width: 100%;
+}
+
+body {
+    background-color: #333;
+    font-family: "Courier New", monospace;
+    color: #fff;
+    font-size: 16px;
+}
+
+form.text-input {
+    display: flex;
+    flex-flow: row wrap;
+    width: 100%;
+    font-size: 0px;
+}
+
+form > input {
+    flex: 1 0 auto;
+    font-size: 16px;
+    border: 0;
+    background: #333;
+    font-weight: bold;
+}
+
+input:focus {
+    outline: none;
+}
+
+form > label {
+    font-size: 16px;
+    background: #333;
+}
+
+.game-area {
+    padding: 5px;
+    position: absolute;
+    z-index: 0;
+    display: flex;
+    flex-flow: column wrap;
+    background-color: #333;
+    justify-content: space-between;
+    height: 100%;
+    width: 100%;
+    max-width: 800px;
+    max-height: 600px;
+}
+
+.full-area {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+p {
+    margin: 0px;
+}
+
+pre {
+    margin: 0px;
+}
