@@ -4,6 +4,7 @@
 angular.module('myApp', [
   'ngRoute',
   'btford.socket-io',
+  'luegg.directives',
   'myApp.view1',
   'myApp.view2',
   'myApp.playerInfo',

@@ -1,10 +1,14 @@
 <div class="full-area">
+    <div class="player-count">
+        {{numConnected}}
+        <p ng-repeat="player in connectedPlayers track by $index">{{player.name}}</p>
+    </div>
     <div class="img-container">
         <img class="back-img" src="goya.jpg">
     </div>
     <div class="game-area">
-        <div class="game-text">
-            <p ng-repeat="msg in messages track by $index" ng-bind-html="asHtml(messages[$index])"></p>
+        <div id="message-area" scroll-glue class="game-text">
+            <p class="message" ng-repeat="msg in messages track by $index" ng-bind-html="asHtml(messages[$index])"></p>
         </div>
         <form class="text-input" autocomplete="off" ng-submit="submit()">
             <label for="text-enter"><pre>&gt; </pre></label>

@@ -12,10 +12,14 @@ angular.module('myApp.view1', ['ngRoute', 'myApp.playerInfo'])
 
 .controller('View1Ctrl', ['socket', '$scope', '$sce', 'playerInfo', function(socket, $scope, $sce, playerInfo) {
     $scope.messages = [];
+    $scope.connectedPlayers = {};
     $scope.askingName = true;
     $scope.confirmingName = false;
+    $scope.numConnected = 0;
+    $scope.id = 0;
 
     socket.on('ask name', function(msg){
+        $scope.id = msg;
         $scope.messages.push("Welcome to the game.");
         $scope.messages.push("What's your name?");
     });
@@ -26,6 +30,19 @@ angular.module('myApp.view1', ['ngRoute', 'myApp.playerInfo'])
 
     socket.on('new player', function(msg){
         $scope.messages.push("A new spirit manifests.");
+    });
+
+    socket.on('update players', function(data){
+        $scope.connectedPlayers = data;
+        $scope.numConnected = Object.keys($scope.connectedPlayers).length;
+    });
+
+    socket.on('disconnect message', function(msg){
+        $scope.messages.push(msg);
+    });
+
+    socket.on('server message', function(msg){
+        $scope.messages.push(msg);
     });
 
     $scope.potentialName = "";
@@ -46,6 +63,7 @@ angular.module('myApp.view1', ['ngRoute', 'myApp.playerInfo'])
                 playerInfo.name = $scope.potentialName;
                 $scope.messages.push("Alright. Welcome, " + playerInfo.name + ".");
                 $scope.messages.push("You may now speak.");
+                socket.emit('confirmed named', $scope.potentialName);
                 $scope.input = "";
                 $scope.confirmingName = false;
                 $scope.nameEntered = true;
@@ -63,6 +81,9 @@ angular.module('myApp.view1', ['ngRoute', 'myApp.playerInfo'])
     }
 
     $scope.chatSubmit = function(){
+        if($scope.input === ""){
+            return;
+        }
         $scope.messages.push("> " + $scope.input);
         socket.emit('player speech', {name: playerInfo.name, msg: $scope.input});
         $scope.input = "";
