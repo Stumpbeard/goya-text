@@ -18,10 +18,10 @@ angular.module('myApp.view1', ['ngRoute', 'myApp.playerInfo'])
     $scope.numConnected = 0;
     $scope.id = 0;
 
-    socket.on('ask name', function(msg){
-        $scope.id = msg;
+    socket.on('ask name', function(){
         $scope.messages.push("Welcome to the game.");
         $scope.messages.push("What's your name?");
+        socket.emit('register', Math.random());
     });
 
     socket.on('rec speech', function(msg){

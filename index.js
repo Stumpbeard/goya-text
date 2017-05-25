@@ -11,11 +11,15 @@ app.use('/script', express.static(__dirname + '/node_modules'));
 var connectedPlayers = {};
 
 io.on('connection', function(socket){
-    id = Math.random();
-    socket.emit('ask name',id);
-    connectedPlayers[id] = {
-        'name': undefined
-    };
+    var id;
+    socket.emit('ask name');
+    socket.on('register', function(msg){
+        id = msg;
+        connectedPlayers[id] = {
+            "name": undefined
+        }
+        io.emit('update players', connectedPlayers);
+    });
     io.emit('update players', connectedPlayers);
     socket.broadcast.emit('new player');
     socket.on('player speech', function(data){
