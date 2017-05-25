@@ -21,8 +21,5 @@
     "postinstall": "bower install",
     "prestart": "npm install",
     "start": "node index.js"
-  },
-  "dependencies": {
-
   }
 }
