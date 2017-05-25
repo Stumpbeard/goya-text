@@ -2,8 +2,9 @@ var express = require('express');
 var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+var port = process.env.PORT || 8000;
 
-http.listen(3000);
+http.listen(port);
 
 app.use(express.static(__dirname + '/app'));
 app.use('/script', express.static(__dirname + '/node_modules'));
