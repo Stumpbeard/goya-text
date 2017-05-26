@@ -28,7 +28,24 @@ io.on('connection', function(socket){
         if (cleaned === ""){
             return;
         }
-        socket.broadcast.emit('rec speech', data.name + " says, \"" + cleaned + "\"");
+        cleaned = cleaned[0].toUpperCase() + cleaned.slice(1);
+        if (!(cleaned[cleaned.length - 1] === '.' || cleaned[cleaned.length - 1] === '?' || cleaned[cleaned.length - 1] === '!')){
+            cleaned = cleaned + '.';
+        }
+        var punct = cleaned[cleaned.length - 1];
+        var speechWord = "";
+        switch(punct){
+            case '?':
+                speechWord = "asks";
+                break;
+            case '!':
+                speechWord = "shouts";
+                break;
+            default:
+                speechWord = "says";
+                break;
+        }
+        socket.broadcast.emit('rec speech', data.name + " " + speechWord + ", \"" + cleaned + "\"");
     });
     socket.on('confirmed named', function(name){
         connectedPlayers[id].name = name;

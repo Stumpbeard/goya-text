@@ -51,7 +51,7 @@ angular.module('myApp.view1', ['ngRoute', 'myApp.playerInfo'])
     $scope.nameSubmission = function(){
         $scope.messages.push("> " + $scope.input);
         if($scope.askingName){
-            $scope.potentialName = $scope.input;
+            $scope.potentialName = toTitleCase($scope.input);
             $scope.messages.push("Your name is " + $scope.potentialName + "? Are you sure? &lt;y/n&gt;");
             $scope.askingName = false;
             $scope.confirmingName = true;
@@ -84,7 +84,24 @@ angular.module('myApp.view1', ['ngRoute', 'myApp.playerInfo'])
         if($scope.input === ""){
             return;
         }
-        $scope.messages.push("> " + $scope.input);
+        $scope.input = $scope.input[0].toUpperCase() + $scope.input.slice(1);
+        if (!($scope.input[$scope.input.length - 1] === '.' || $scope.input[$scope.input.length - 1] === '?' || $scope.input[$scope.input.length - 1] === '!')){
+            $scope.input = $scope.input + '.';
+        }
+        var punct = $scope.input[$scope.input.length - 1];
+        var speechWord = "";
+        switch(punct){
+            case '?':
+                speechWord = "ask";
+                break;
+            case '!':
+                speechWord = "shout";
+                break;
+            default:
+                speechWord = "say";
+                break;
+        }
+        $scope.messages.push("You " + speechWord + ", \"" + $scope.input + "\"");
         socket.emit('player speech', {name: playerInfo.name, msg: $scope.input});
         $scope.input = "";
     }
@@ -100,5 +117,13 @@ angular.module('myApp.view1', ['ngRoute', 'myApp.playerInfo'])
 
     $scope.asHtml = function(msg){
         return $sce.trustAsHtml(msg);
+    }
+
+    var toTitleCase = function(str){
+        str = str.toLowerCase().split(' ');
+        for (var i = 0; i < str.length; ++i){
+            str[i] = str[i][0].toUpperCase() + str[i].slice(1);
+        }
+        return str.join(' ');
     }
 }]);
