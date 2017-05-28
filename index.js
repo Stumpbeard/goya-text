@@ -39,8 +39,14 @@ io.on('connection', function(socket){
         var pushMsgs = [];
 
         if(incPlayer.name === undefined && !incPlayer.nameConfirmed){
-            matchPlayer.name = toTitleCase(msg);
             pushMsgs.push("&gt; " + msg);
+            if(msg.length > 25){
+                pushMsgs.push("Please limit name to 25 characters or less.");
+                pushMsgs.push("What's your name?");
+                socket.emit('server message', message(matchPlayer.id, pushMsgs));
+                return;
+            }
+            matchPlayer.name = toTitleCase(msg);
             pushMsgs.push("Your name is " + matchPlayer.name + "? Are you sure? &lt;y/n&gt;");
 
             socket.emit('server message', message(matchPlayer.id, pushMsgs));
@@ -64,9 +70,21 @@ io.on('connection', function(socket){
                 socket.emit('server message', message(matchPlayer.id, pushMsgs));
                 return;
             }
-        return;
         }
     });
+
+    socket.on('disconnect', function(){
+        var pushMsgs = [];
+        if(connectedPlayers[id].name === undefined){
+            pushMsgs.push('A nameless spirit dissipates.');
+        } else {
+            pushMsgs.push(connectedPlayers[id].name + ' returns to nothingness.');
+        }
+        delete playerNames[id];
+        delete connectedPlayers[id];
+        io.emit('update players', playerNames);
+        io.emit('server message', {messages: pushMsgs});
+    })
     // socket.on('register', function(msg){
     //     id = msg;
     //     connectedPlayers[id] = {
