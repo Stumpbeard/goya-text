@@ -1,23 +1,56 @@
-var express = require('express');
-var app = express();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
-var port = process.env.PORT || 8000;
+const express = require('express');
+const app = express();
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
+const port = process.env.PORT || 8000;
 
 http.listen(port);
 
 app.use(express.static(__dirname + '/app'));
 app.use('/script', express.static(__dirname + '/node_modules'));
 
-var connectedPlayers = {};
-var playerNames = {};
-var message = function(player, msg){
+let connectedPlayers = {};
+let playerNames = {};
+
+function message(player, msg){
     return {state: connectedPlayers[player], messages: msg};
 }
 
+function nameSetting(incPlayer, pushMsgs, msg, socket, matchPlayer, id) {
+    if (incPlayer.name === undefined && !incPlayer.nameConfirmed) {
+        pushMsgs.push("&gt; " + msg);
+        if (msg.length > 25) {
+            pushMsgs.push("Please limit name to 25 characters or less.");
+            pushMsgs.push("What's your name?");
+            socket.emit('server message', message(matchPlayer.id, pushMsgs));
+        }
+        matchPlayer.name = toTitleCase(msg);
+        pushMsgs.push("Your name is " + matchPlayer.name + "? Are you sure? &lt;y/n&gt;");
+
+        socket.emit('server message', message(matchPlayer.id, pushMsgs));
+    }
+
+    else if (incPlayer.name !== undefined && !incPlayer.nameConfirmed) {
+        pushMsgs.push("&gt; " + msg);
+        if (msg === 'y' || msg === 'Y') {
+            matchPlayer.nameConfirmed = true;
+            pushMsgs.push("Alright. Welcome, " + matchPlayer.name + ".");
+            pushMsgs.push("You may now speak.");
+            playerNames[id].name = matchPlayer.name;
+            io.emit('update players', playerNames);
+            socket.emit('server message', message(matchPlayer.id, pushMsgs));
+        } else {
+            matchPlayer.name = undefined;
+            pushMsgs.push('Alright.');
+            pushMsgs.push('What\'s your name?');
+            socket.emit('server message', message(matchPlayer.id, pushMsgs));
+        }
+    }
+}
+
 io.on('connection', function(socket){
-    var id;
-    console.log("Player connected.")
+    let id;
+    console.log("Player connected.");
     id = Math.floor(Math.random()*Math.pow(2, 16));
     connectedPlayers[id] = {
         name: undefined,
@@ -26,55 +59,23 @@ io.on('connection', function(socket){
     };
     playerNames[id] = {
         name: undefined
-    }
+    };
     socket.broadcast.emit('server message', {messages: "A new spirit manifests."});
     io.emit('update players', playerNames);
     socket.emit('send id', id);
     socket.emit('server message', message(id, intro));
 
     socket.on('client message', function(data){
-        var incPlayer = data.player;
-        var matchPlayer = connectedPlayers[incPlayer.id];
-        var msg = data.msg;
-        var pushMsgs = [];
+        let incPlayer = data.player;
+        let matchPlayer = connectedPlayers[incPlayer.id];
+        let msg = escapeHtml(data.msg);
+        let pushMsgs = [];
 
-        if(incPlayer.name === undefined && !incPlayer.nameConfirmed){
-            pushMsgs.push("&gt; " + msg);
-            if(msg.length > 25){
-                pushMsgs.push("Please limit name to 25 characters or less.");
-                pushMsgs.push("What's your name?");
-                socket.emit('server message', message(matchPlayer.id, pushMsgs));
-                return;
-            }
-            matchPlayer.name = toTitleCase(msg);
-            pushMsgs.push("Your name is " + matchPlayer.name + "? Are you sure? &lt;y/n&gt;");
-
-            socket.emit('server message', message(matchPlayer.id, pushMsgs));
-            return;
-        }
-
-        else if(incPlayer.name !== undefined && !incPlayer.nameConfirmed){
-            pushMsgs.push("&gt; " +  msg);
-            if(msg === 'y' || msg === 'Y'){
-                matchPlayer.nameConfirmed = true;
-                pushMsgs.push("Alright. Welcome, " + matchPlayer.name + ".");
-                pushMsgs.push("You may now speak.");
-                playerNames[id].name = matchPlayer.name;
-                io.emit('update players', playerNames);
-                socket.emit('server message', message(matchPlayer.id, pushMsgs));
-                return;
-            } else {
-                matchPlayer.name = undefined;
-                pushMsgs.push('Alright.');
-                pushMsgs.push('What\'s your name?');
-                socket.emit('server message', message(matchPlayer.id, pushMsgs));
-                return;
-            }
-        }
+        nameSetting(incPlayer, pushMsgs, msg, socket, matchPlayer, id);
     });
 
     socket.on('disconnect', function(){
-        var pushMsgs = [];
+        let pushMsgs = [];
         if(connectedPlayers[id].name === undefined){
             pushMsgs.push('A nameless spirit dissipates.');
         } else {
@@ -135,7 +136,7 @@ io.on('connection', function(socket){
     // })
 });
 
-var intro = ['Welcome.', 'What\'s your name?'];
+const intro = ['Welcome.', 'What\'s your name?'];
 
 function escapeHtml(unsafe) {
     return unsafe
@@ -146,9 +147,9 @@ function escapeHtml(unsafe) {
          .replace(/'/g, "");
  }
 
- var toTitleCase = function(str){
+ function toTitleCase(str){
      str = str.toLowerCase().split(' ');
-     for (var i = 0; i < str.length; ++i){
+     for (let i = 0; i < str.length; ++i){
          str[i] = str[i][0].toUpperCase() + str[i].slice(1);
      }
      return str.join(' ');
