@@ -16,6 +16,10 @@ function message(player, msg){
     return {state: connectedPlayers[player], messages: msg};
 }
 
+//
+// MESSAGE PARSING
+//
+
 function nameSetting(incPlayer, pushMsgs, msg, socket, matchPlayer, id) {
     if (incPlayer.name === undefined && !incPlayer.nameConfirmed) {
         pushMsgs.push("&gt; " + msg);
@@ -23,6 +27,7 @@ function nameSetting(incPlayer, pushMsgs, msg, socket, matchPlayer, id) {
             pushMsgs.push("Please limit name to 25 characters or less.");
             pushMsgs.push("What's your name?");
             socket.emit('server message', message(matchPlayer.id, pushMsgs));
+            return;
         }
         matchPlayer.name = toTitleCase(msg);
         pushMsgs.push("Your name is " + matchPlayer.name + "? Are you sure? &lt;y/n&gt;");
@@ -39,6 +44,7 @@ function nameSetting(incPlayer, pushMsgs, msg, socket, matchPlayer, id) {
             playerNames[id].name = matchPlayer.name;
             io.emit('update players', playerNames);
             socket.emit('server message', message(matchPlayer.id, pushMsgs));
+            socket.broadcast.emit('server message', {messages: 'A spirit takes form as ' + matchPlayer.name + '.'});
         } else {
             matchPlayer.name = undefined;
             pushMsgs.push('Alright.');
@@ -48,6 +54,14 @@ function nameSetting(incPlayer, pushMsgs, msg, socket, matchPlayer, id) {
     }
 }
 
+function cleanForSpeech(msg) {
+    msg = msg.slice(4);
+    msg = msg[0].toUpperCase() + msg.slice(1);
+    if(!(msg[msg.length-1] === '.' || msg[msg.length-1] === '!' ||msg[msg.length-1] === '?')){
+        msg = msg + '.';
+    }
+    return msg;
+}
 io.on('connection', function(socket){
     let id;
     console.log("Player connected.");
@@ -71,7 +85,35 @@ io.on('connection', function(socket){
         let msg = escapeHtml(data.msg);
         let pushMsgs = [];
 
-        nameSetting(incPlayer, pushMsgs, msg, socket, matchPlayer, id);
+        // If the name is confirmed, do normal parsing
+        if(matchPlayer.name !== undefined && matchPlayer.nameConfirmed) {
+            if (msg.slice(0, 4) === 'say ') {
+                msg = cleanForSpeech(msg);
+                let punct = msg[msg.length - 1];
+                switch (punct) {
+                    case '?':
+                        punct = ' ask';
+                        break;
+                    case '!':
+                        punct = ' shout';
+                        break;
+                    default:
+                        punct = ' say';
+                        break;
+                }
+                socket.broadcast.emit('server message', {messages: matchPlayer.name + punct + 's, <strong>"' + msg + '"</strong>'});
+                pushMsgs.push('You' + punct + ', <strong>"' + msg + '"</strong>');
+                socket.emit('server message', message(matchPlayer.id, pushMsgs));
+            } else if(msg.slice(0, 5) === '!help'){
+                pushMsgs.push('Type <em>say {your message here}</em> to speak.');
+                socket.emit('server message', message(matchPlayer.id, pushMsgs));
+            } else {
+                pushMsgs.push('Not understood. Try typing !help for basic commands.');
+                socket.emit('server message', message(matchPlayer.id, pushMsgs));
+            }
+        } else {
+            nameSetting(incPlayer, pushMsgs, msg, socket, matchPlayer, id);
+        }
     });
 
     socket.on('disconnect', function(){
@@ -85,7 +127,7 @@ io.on('connection', function(socket){
         delete connectedPlayers[id];
         io.emit('update players', playerNames);
         io.emit('server message', {messages: pushMsgs});
-    })
+    });
     // socket.on('register', function(msg){
     //     id = msg;
     //     connectedPlayers[id] = {
