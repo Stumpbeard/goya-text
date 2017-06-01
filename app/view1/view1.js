@@ -15,7 +15,7 @@ angular.module('myApp.view1', ['ngRoute', 'myApp.playerInfo'])
         name: undefined,
         nameConfirmed: false,
         id: undefined
-    }
+    };
 
     $scope.messages = [];
     $scope.connectedPlayers = {};
@@ -26,13 +26,14 @@ angular.module('myApp.view1', ['ngRoute', 'myApp.playerInfo'])
         if($scope.input === ""){
             return;
         }
-        var message = $scope.input;
+        let message = $scope.input;
         socket.emit('client message', {player: $scope.state, msg: message});
         $scope.input = '';
-    }
+    };
 
     socket.on('send id', function(id){
         $scope.state.id = id;
+        $scope.messages = [];
     });
 
     socket.on('server message', function(data){
@@ -146,13 +147,5 @@ angular.module('myApp.view1', ['ngRoute', 'myApp.playerInfo'])
 
     $scope.asHtml = function(msg){
         return $sce.trustAsHtml(msg);
-    }
-
-    var toTitleCase = function(str){
-        str = str.toLowerCase().split(' ');
-        for (var i = 0; i < str.length; ++i){
-            str[i] = str[i][0].toUpperCase() + str[i].slice(1);
-        }
-        return str.join(' ');
-    }
+    };
 }]);
