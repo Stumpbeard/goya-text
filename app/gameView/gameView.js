@@ -1,16 +1,16 @@
 'use strict';
 
-angular.module('myApp.view1', ['ngRoute', 'myApp.playerInfo'])
+angular.module('goya.gameView', ['ngRoute', 'goya.playerInfo'])
 
 .config(['$routeProvider', function($routeProvider) {
   $routeProvider.when('/', {
     title: 'Online Text Adventure',
-    templateUrl: 'view1/view1.html',
-    controller: 'View1Ctrl'
+    templateUrl: 'gameView/gameView.html',
+    controller: 'GameCtrl'
   });
 }])
 
-.controller('View1Ctrl', ['socket', '$scope', '$sce', 'playerInfo', function(socket, $scope, $sce, playerInfo) {
+.controller('GameCtrl', ['socket', '$scope', '$sce', 'playerInfo', function(socket, $scope, $sce, playerInfo) {
     $scope.state = {
         name: undefined,
         nameConfirmed: false,

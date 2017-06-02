@@ -1,14 +1,12 @@
 'use strict';
 
 // Declare app level module which depends on views, and components
-angular.module('myApp', [
+angular.module('goya', [
   'ngRoute',
   'btford.socket-io',
   'luegg.directives',
-  'myApp.view1',
-  'myApp.view2',
-  'myApp.playerInfo',
-  'myApp.version'
+  'goya.gameView',
+  'goya.playerInfo'
 ]).
 config(['$locationProvider', '$routeProvider', function($locationProvider, $routeProvider) {
   $locationProvider.html5Mode(true);

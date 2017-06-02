@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('myApp.playerInfo', []).
+angular.module('goya.playerInfo', []).
 
 factory('playerInfo', [function(){
     return {
