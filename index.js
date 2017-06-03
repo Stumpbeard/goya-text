@@ -1,3 +1,4 @@
+const fs = require('fs');
 const express = require('express');
 const app = express();
 const http = require('http').Server(app);
@@ -14,6 +15,17 @@ let playerNames = {};
 
 function message(player, msg){
     return {state: connectedPlayers[player], messages: msg};
+}
+
+//
+// LOAD ROOMS
+//
+
+const roomFiles = fs.readdirSync('rooms');
+let rooms = [];
+for(let file in roomFiles){
+    let room = fs.readFileSync('rooms/' + roomFiles[file]);
+    rooms.push(JSON.parse(room));
 }
 
 //
