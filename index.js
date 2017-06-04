@@ -1,4 +1,6 @@
 const fs = require('fs');
+const _ = require('lodash');
+
 const express = require('express');
 const app = express();
 const http = require('http').Server(app);
@@ -117,6 +119,12 @@ io.on('connection', function(socket){
     socket.on('client message', function(data){
         let incPlayer = data.player;
         let matchPlayer = connectedPlayers[incPlayer.id];
+        if(!_.isEqual(matchPlayer, incPlayer)){
+            console.log('DESYNC');
+            console.log('inc = ' + JSON.stringify(incPlayer));
+            console.log('match = ' + JSON.stringify(matchPlayer));
+
+        }
         let msg = escapeHtml(data.msg);
         let pushMsgs = [];
 
