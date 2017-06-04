@@ -11,10 +11,12 @@ angular.module('goya.gameView', ['ngRoute', 'goya.playerInfo'])
 }])
 
 .controller('GameCtrl', ['socket', '$scope', '$sce', 'playerInfo', function(socket, $scope, $sce, playerInfo) {
+    $scope.currentRoom = {};
     $scope.state = {
         name: undefined,
         nameConfirmed: false,
-        id: undefined
+        id: undefined,
+        room: $scope.currentRoom
     };
 
     $scope.messages = [];
