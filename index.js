@@ -57,7 +57,6 @@ function nameSetting(incPlayer, pushMsgs, msg, socket, matchPlayer, id) {
             io.emit('update players', playerNames);
             matchPlayer.room = rooms['intro0'];
             pushMsgs.prepush("Your body takes shape...");
-            pushMsgs.prepush("<pre> </pre>");
             pushMsgs.prepush(matchPlayer.room.desc);
             socket.emit('server message', message(matchPlayer.id, pushMsgs));
             socket.broadcast.emit('server message', {messages: 'A spirit takes form as ' + matchPlayer.name + '.'});
@@ -76,6 +75,25 @@ function cleanForSpeech(msg) {
     if(!(msg[msg.length-1] === '.' || msg[msg.length-1] === '!' ||msg[msg.length-1] === '?')){
         msg = msg + '.';
     }
+    return msg;
+}
+function speech(msg, socket, matchPlayer, pushMsgs) {
+    msg = cleanForSpeech(msg);
+    let punct = msg[msg.length - 1];
+    switch (punct) {
+        case '?':
+            punct = ' ask';
+            break;
+        case '!':
+            punct = ' shout';
+            break;
+        default:
+            punct = ' say';
+            break;
+    }
+    socket.broadcast.emit('server message', {messages: matchPlayer.name + punct + 's, <strong>"' + msg + '"</strong>'});
+    pushMsgs.prepush('You' + punct + ', <strong>"' + msg + '"</strong>');
+    socket.emit('server message', message(matchPlayer.id, pushMsgs));
     return msg;
 }
 io.on('connection', function(socket){
@@ -105,24 +123,9 @@ io.on('connection', function(socket){
         // If the name is confirmed, do normal parsing
         if(matchPlayer.name !== undefined && matchPlayer.nameConfirmed) {
             if (msg.slice(0, 4) === 'say ') {
-                msg = cleanForSpeech(msg);
-                let punct = msg[msg.length - 1];
-                switch (punct) {
-                    case '?':
-                        punct = ' ask';
-                        break;
-                    case '!':
-                        punct = ' shout';
-                        break;
-                    default:
-                        punct = ' say';
-                        break;
-                }
-                socket.broadcast.emit('server message', {messages: matchPlayer.name + punct + 's, <strong>"' + msg + '"</strong>'});
-                pushMsgs.prepush('You' + punct + ', <strong>"' + msg + '"</strong>');
-                socket.emit('server message', message(matchPlayer.id, pushMsgs));
+                speech(msg, socket, matchPlayer, pushMsgs);
             } else if(msg.slice(0, 5) === '!help'){
-                pushMsgs.prepush('Typical commands:<pre>\n    <em>say {your message here}</em> to speak.\n    <em>d</em> or <em>desc</em> to see room description.\n    <em>go {direction}</em> or just <em>{direction}</em> to move between locations.</pre>');
+                pushMsgs.prepush('Typical commands:\n\t<em>say {your message here}</em> to speak.\n\t<em>d</em> or <em>desc</em> to see room description.\n\t<em>go {direction}</em> or just <em>{direction}</em> to move between locations.');
                 socket.emit('server message', message(matchPlayer.id, pushMsgs));
             } else {
                 pushMsgs.prepush('Not understood. Try typing !help for basic commands.');
@@ -217,13 +220,15 @@ function escapeHtml(unsafe) {
  Array.prototype.prepush = function(msg){
      "use strict";
      if(typeof msg === 'string'){
-         msg = msg.replace('\n', '<pre>\n</pre>');
+         msg = msg.replace(/\n/g, '<br>');
+         msg = msg.replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
          this.push(msg)
      }
      else {
          for(let x in msg){
-             msg[x] = msg[x].replace('\n', '<pre>\n</pre>');
-             this.push(msg[x])
+             msg[x] = msg[x].replace(/\n/g, '<br>');
+             msg[x] = msg[x].replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
+             this.push(msg[x]);
          }
      }
- }
+ };
