@@ -22,10 +22,11 @@ function message(player, msg){
 //
 
 const roomFiles = fs.readdirSync('rooms');
-let rooms = [];
+let rooms = {};
 for(let file in roomFiles){
     let room = fs.readFileSync('rooms/' + roomFiles[file]);
-    rooms.push(JSON.parse(room));
+    let roomParsed = JSON.parse(room);
+    rooms[roomParsed.id] = roomParsed;
 }
 
 //
@@ -34,33 +35,36 @@ for(let file in roomFiles){
 
 function nameSetting(incPlayer, pushMsgs, msg, socket, matchPlayer, id) {
     if (incPlayer.name === undefined && !incPlayer.nameConfirmed) {
-        pushMsgs.push("&gt; " + msg);
+        pushMsgs.prepush("&gt; " + msg);
         if (msg.length > 25) {
-            pushMsgs.push("Please limit name to 25 characters or less.");
-            pushMsgs.push("What's your name?");
+            pushMsgs.prepush("Please limit name to 25 characters or less.");
+            pushMsgs.prepush("What's your name?");
             socket.emit('server message', message(matchPlayer.id, pushMsgs));
             return;
         }
         matchPlayer.name = toTitleCase(msg);
-        pushMsgs.push("Your name is " + matchPlayer.name + "? Are you sure? &lt;y/n&gt;");
+        pushMsgs.prepush("Your name is " + matchPlayer.name + "? Are you sure? &lt;y/n&gt;");
 
         socket.emit('server message', message(matchPlayer.id, pushMsgs));
     }
 
     else if (incPlayer.name !== undefined && !incPlayer.nameConfirmed) {
-        pushMsgs.push("&gt; " + msg);
+        pushMsgs.prepush("&gt; " + msg);
         if (msg === 'y' || msg === 'Y') {
             matchPlayer.nameConfirmed = true;
-            pushMsgs.push("Alright. Welcome, " + matchPlayer.name + ".");
-            pushMsgs.push("You may now speak.");
+            pushMsgs.prepush("Alright. Welcome, " + matchPlayer.name + ".");
             playerNames[id].name = matchPlayer.name;
             io.emit('update players', playerNames);
+            matchPlayer.room = rooms['intro0'];
+            pushMsgs.prepush("Your body takes shape...");
+            pushMsgs.prepush("<pre> </pre>");
+            pushMsgs.prepush(matchPlayer.room.desc);
             socket.emit('server message', message(matchPlayer.id, pushMsgs));
             socket.broadcast.emit('server message', {messages: 'A spirit takes form as ' + matchPlayer.name + '.'});
         } else {
             matchPlayer.name = undefined;
-            pushMsgs.push('Alright.');
-            pushMsgs.push('What\'s your name?');
+            pushMsgs.prepush('Alright.');
+            pushMsgs.prepush('What\'s your name?');
             socket.emit('server message', message(matchPlayer.id, pushMsgs));
         }
     }
@@ -81,7 +85,8 @@ io.on('connection', function(socket){
     connectedPlayers[id] = {
         name: undefined,
         nameConfirmed: false,
-        id: id
+        id: id,
+        room: undefined
     };
     playerNames[id] = {
         name: undefined
@@ -114,13 +119,13 @@ io.on('connection', function(socket){
                         break;
                 }
                 socket.broadcast.emit('server message', {messages: matchPlayer.name + punct + 's, <strong>"' + msg + '"</strong>'});
-                pushMsgs.push('You' + punct + ', <strong>"' + msg + '"</strong>');
+                pushMsgs.prepush('You' + punct + ', <strong>"' + msg + '"</strong>');
                 socket.emit('server message', message(matchPlayer.id, pushMsgs));
             } else if(msg.slice(0, 5) === '!help'){
-                pushMsgs.push('Type <em>say {your message here}</em> to speak.');
+                pushMsgs.prepush('Typical commands:<pre>\n    <em>say {your message here}</em> to speak.\n    <em>d</em> or <em>desc</em> to see room description.\n    <em>go {direction}</em> or just <em>{direction}</em> to move between locations.</pre>');
                 socket.emit('server message', message(matchPlayer.id, pushMsgs));
             } else {
-                pushMsgs.push('Not understood. Try typing !help for basic commands.');
+                pushMsgs.prepush('Not understood. Try typing !help for basic commands.');
                 socket.emit('server message', message(matchPlayer.id, pushMsgs));
             }
         } else {
@@ -131,9 +136,9 @@ io.on('connection', function(socket){
     socket.on('disconnect', function(){
         let pushMsgs = [];
         if(connectedPlayers[id].name === undefined){
-            pushMsgs.push('A nameless spirit dissipates.');
+            pushMsgs.prepush('A nameless spirit dissipates.');
         } else {
-            pushMsgs.push(connectedPlayers[id].name + ' returns to nothingness.');
+            pushMsgs.prepush(connectedPlayers[id].name + ' returns to nothingness.');
         }
         delete playerNames[id];
         delete connectedPlayers[id];
@@ -207,4 +212,18 @@ function escapeHtml(unsafe) {
          str[i] = str[i][0].toUpperCase() + str[i].slice(1);
      }
      return str.join(' ');
+ }
+
+ Array.prototype.prepush = function(msg){
+     "use strict";
+     if(typeof msg === 'string'){
+         msg = msg.replace('\n', '<pre>\n</pre>');
+         this.push(msg)
+     }
+     else {
+         for(let x in msg){
+             msg[x] = msg[x].replace('\n', '<pre>\n</pre>');
+             this.push(msg[x])
+         }
+     }
  }
