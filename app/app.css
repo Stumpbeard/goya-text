@@ -90,6 +90,7 @@ form > label {
 
 p {
     margin: 0px;
+    padding-bottom: 0.5em;
 }
 
 pre {
