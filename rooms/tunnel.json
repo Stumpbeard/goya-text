@@ -1,0 +1,13 @@
+{
+  "id": 2,
+  "title": "A blocked tunnel",
+  "desc": "You come to a dead end. The tunnel ends in an impassable pile of rubble.",
+  "bDesc": "You're at the end of the tunnel.",
+  "exits": [
+    {
+      "dir": "south",
+      "id": 0
+    }
+  ],
+  "exitDesc": "You can still see the campfire of the previous room to the south."
+}
