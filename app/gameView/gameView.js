@@ -13,9 +13,9 @@ angular.module('goya.gameView', ['ngRoute', 'goya.playerInfo'])
 .controller('GameCtrl', ['socket', '$scope', '$sce', 'playerInfo', function(socket, $scope, $sce, playerInfo) {
     $scope.currentRoom = {};
     $scope.state = {
-        name: undefined,
+        name: '',
         nameConfirmed: false,
-        id: undefined,
+        id: -1,
         room: $scope.currentRoom
     };
 
