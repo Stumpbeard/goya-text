@@ -132,6 +132,9 @@ io.on('connection', function(socket){
 
         }
         let msg = escapeHtml(data.msg);
+        let msgWords = msg.split(' ');
+        msgWords[0] = msgWords[0].toLowerCase();
+        msg = msgWords.join(' ');
         let pushMsgs = [];
 
         // If the name is confirmed, do normal parsing
@@ -141,6 +144,9 @@ io.on('connection', function(socket){
                 speech(msg, socket, matchPlayer, pushMsgs);
             } else if(msg.slice(0, 5) === '!help') {
                 prepush(pushMsgs, 'Typical commands:\n\t<em>say {your message here}</em> to speak.\n\t<em>d</em> or <em>desc</em> to see room description.\n\t<em>go {direction}</em> or just <em>{direction}</em> to move between locations.');
+                socket.emit('server message', message(matchPlayer.id, pushMsgs));
+            } else if(msg.split(' ')[0] === 'd' || msg.split(' ')[0] === 'desc'){
+                prepush(pushMsgs, newRoomMessages(matchPlayer.room));
                 socket.emit('server message', message(matchPlayer.id, pushMsgs));
             } else if(match = roomRe.exec(msg)) {
                 let exit = msg.slice(match[0].length + 1).toLowerCase();
@@ -230,7 +236,7 @@ io.on('connection', function(socket){
 
     socket.on('disconnect', function(){
         let pushMsgs = [];
-        if(connectedPlayers[id].name === undefined){
+        if(connectedPlayers[id].name === ""){
             prepush(pushMsgs, 'A nameless spirit dissipates.');
         } else {
             prepush(pushMsgs, connectedPlayers[id].name + ' returns to nothingness.');
@@ -298,8 +304,7 @@ function escapeHtml(unsafe) {
          .replace(/&/g, "")
          .replace(/</g, "")
          .replace(/>/g, "")
-         .replace(/"/g, "")
-         .replace(/'/g, "");
+         .replace(/"/g, "");
  }
 
  function toTitleCase(str){
