@@ -82,6 +82,7 @@ function cleanForSpeech(msg) {
 }
 function speech(msg, socket, matchPlayer, pushMsgs) {
     msg = cleanForSpeech(msg);
+    let shouting = msg.indexOf('!') > -1;
     let punct = msg[msg.length - 1];
     switch (punct) {
         case '?':
@@ -94,7 +95,20 @@ function speech(msg, socket, matchPlayer, pushMsgs) {
             punct = ' say';
             break;
     }
-    socket.broadcast.emit('server message', {messages: matchPlayer.name + punct + 's, <strong>"' + msg + '"</strong>'});
+    for(let key in connectedPlayers){
+        let player = connectedPlayers[key];
+        if(player.room === matchPlayer.room){
+            socket.broadcast.to(player.id).emit('server message', {messages: matchPlayer.name + punct + 's, <strong>"' + msg + '"</strong>'});
+        } else if(shouting) {
+            let adjacents = rooms[matchPlayer.room].exits;
+            for (let i = 0; i < adjacents.length; ++i) {
+                if (player.room === adjacents[i].id) {
+                    socket.broadcast.to(player.id).emit('server message', {messages: 'Someone shouts, <strong>"' + msg + '"</strong>' + ' from somewhere nearby.'});
+                }
+            }
+        }
+    }
+    // socket.broadcast.emit('server message', {messages: matchPlayer.name + punct + 's, <strong>"' + msg + '"</strong>'});
     prepush(pushMsgs, 'You' + punct + ', <strong>"' + msg + '"</strong>');
     socket.emit('server message', message(matchPlayer.id, pushMsgs));
     return msg;
