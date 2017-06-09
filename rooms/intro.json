@@ -13,5 +13,6 @@
       "id": 1
     }
   ],
-  "exitDesc": "There is a dimly lit cavern tunnel to the north, and dark, still water to the south."
+  "exitDesc": "There is a dimly lit cavern tunnel to the north, and dark, still water to the south.",
+  "entities": []
 }

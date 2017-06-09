@@ -57,9 +57,10 @@ function nameSetting(incPlayer, pushMsgs, msg, socket, matchPlayer, id) {
             prepush(pushMsgs, "Alright. Welcome, " + matchPlayer.name + ".");
             playerNames[id].name = matchPlayer.name;
             io.emit('update players', playerNames);
-            matchPlayer.room = rooms[0];
+            matchPlayer.room = rooms[0].id;
+            rooms[0].entities.push(matchPlayer);
             prepush(pushMsgs, "Your body takes shape...");
-            prepush(pushMsgs, newRoomMessages(matchPlayer.room));
+            prepush(pushMsgs, newRoomMessages(matchPlayer));
             socket.emit('server message', message(matchPlayer.id, pushMsgs));
             socket.broadcast.emit('server message', {messages: 'A spirit takes form as ' + matchPlayer.name + '.'});
         } else {
@@ -122,23 +123,22 @@ function roomChange(exit, matchPlayer, pushMsgs) {
         default:
             break;
     }
-    const exits = matchPlayer.room.exits;
+    const exits = rooms[matchPlayer.room].exits;
     for (let i = 0; i < exits.length; ++i) {
         if (exit.match(exits[i]['dir'])) {
             dirFound = true;
             let newRoom = exits[i]['id'];
-            matchPlayer.room = rooms[newRoom];
+            matchPlayer.room = newRoom;
             prepush(pushMsgs, 'You exit to the ' + exits[i]['dir'] + '...');
-            prepush(pushMsgs, newRoomMessages(matchPlayer.room));
+            prepush(pushMsgs, newRoomMessages(matchPlayer));
             break;
         }
     }
     return dirFound;
 }
 io.on('connection', function(socket){
-    let id;
+    let id = socket.id;
     console.log("Player connected.");
-    id = Math.floor(Math.random()*Math.pow(2, 16));
     connectedPlayers[id] = {
         name: '',
         nameConfirmed: false,
@@ -159,11 +159,11 @@ io.on('connection', function(socket){
         if(!(_.isEqual(matchPlayer, incPlayer))){
             console.log('DESYNC');
             console.log('inc = ' + JSON.stringify(incPlayer));
-            for(key in incPlayer){
+            for(let key in incPlayer){
                 console.log('typeof ' + key + ' = ' + typeof(incPlayer[key]));
             }
             console.log('match = ' + JSON.stringify(matchPlayer));
-            for(key in matchPlayer){
+            for(let key in matchPlayer){
                 console.log('typeof ' + key + ' = ' + typeof(matchPlayer[key]));
             }
 
@@ -183,7 +183,7 @@ io.on('connection', function(socket){
                 prepush(pushMsgs, 'Typical commands:\n\t<em>say {your message here}</em> to speak.\n\t<em>d</em> or <em>desc</em> to see room description.\n\t<em>go {direction}</em> or just <em>{direction}</em> to move between locations.');
                 socket.emit('server message', message(matchPlayer.id, pushMsgs));
             } else if(msg.split(' ')[0] === 'd' || msg.split(' ')[0] === 'desc'){
-                prepush(pushMsgs, newRoomMessages(matchPlayer.room));
+                prepush(pushMsgs, newRoomMessages(matchPlayer));
                 socket.emit('server message', message(matchPlayer.id, pushMsgs));
             } else if(match = roomRe.exec(msg)) {
                 let exit = msg.slice(match[0].length + 1).toLowerCase();
@@ -286,13 +286,24 @@ function escapeHtml(unsafe) {
      return str.join(' ');
  }
 
- function newRoomMessages(room){
-     "use strict";
-     return ['\n' + room.title + '\n----------------------------------------\n' + room.desc, room.exitDesc];
+ function newRoomMessages(player){
+     let room = rooms[player.room];
+     let others = [];
+     for(let i = 0; i < room.entities.length; ++i){
+         if(room.entities[i].name != player.name){
+             others.push(room.entities[i].name);
+         }
+     }
+     let roomEnts = 'Others in area: ';
+     if(others.length === 0){
+         roomEnts = 'No one else is around.';
+     } else {
+         roomEnts = roomEnts + others.join(', ');
+     }
+     return ['\n' + room.title + '\n----------------------------------------\n' + room.desc, room.exitDesc, roomEnts];
  }
 
  function prepush(msgArray, msg){
-     "use strict";
      if(typeof msg === 'string'){
          msg = msg.replace(/\n/g, '<br>');
          msg = msg.replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
