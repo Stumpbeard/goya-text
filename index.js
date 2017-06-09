@@ -127,8 +127,14 @@ function roomChange(exit, matchPlayer, pushMsgs) {
     for (let i = 0; i < exits.length; ++i) {
         if (exit.match(exits[i]['dir'])) {
             dirFound = true;
-            let newRoom = exits[i]['id'];
-            matchPlayer.room = newRoom;
+            let oldRoom = rooms[matchPlayer.room];
+            let newRoom = rooms[exits[i]['id']];
+            let index = oldRoom.entities.indexOf(matchPlayer);
+            if(index > -1){
+                oldRoom.entities.splice(index, 1);
+            }
+            matchPlayer.room = newRoom.id;
+            newRoom.entities.push(matchPlayer);
             prepush(pushMsgs, 'You exit to the ' + exits[i]['dir'] + '...');
             prepush(pushMsgs, newRoomMessages(matchPlayer));
             break;
