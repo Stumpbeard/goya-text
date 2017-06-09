@@ -242,10 +242,17 @@ io.on('connection', function(socket){
 
     socket.on('disconnect', function(){
         let pushMsgs = [];
-        if(connectedPlayers[id].name === ""){
+        if(connectedPlayers[id].nameConfirmed === false){
             prepush(pushMsgs, 'A nameless spirit dissipates.');
         } else {
             prepush(pushMsgs, connectedPlayers[id].name + ' returns to nothingness.');
+        }
+        for(let key in rooms){
+            let room = rooms[key];
+            let playerIndex = room.entities.indexOf(connectedPlayers[id]);
+            if(playerIndex > -1){
+                room.entities.splice(playerIndex, 1);
+            }
         }
         delete playerNames[id];
         delete connectedPlayers[id];
