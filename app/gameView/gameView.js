@@ -4,7 +4,7 @@ angular.module('goya.gameView', ['ngRoute', 'goya.playerInfo'])
 
 .config(['$routeProvider', function($routeProvider) {
   $routeProvider.when('/', {
-    title: 'Online Text Adventure',
+    title: 'Goya',
     templateUrl: 'gameView/gameView.html',
     controller: 'GameCtrl'
   });

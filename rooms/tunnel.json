@@ -9,5 +9,6 @@
       "id": 0
     }
   ],
-  "exitDesc": "You can still see the campfire of the previous room to the south."
+  "exitDesc": "You can still see the campfire of the previous room to the south.",
+  "entities": []
 }

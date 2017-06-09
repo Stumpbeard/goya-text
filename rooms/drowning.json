@@ -9,5 +9,6 @@
       "id": 0
     }
   ],
-  "exitDesc": "There is only the shore! Swim north!"
+  "exitDesc": "There is only the shore! Swim north!",
+  "entities": []
 }
