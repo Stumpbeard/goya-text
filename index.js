@@ -98,6 +98,43 @@ function speech(msg, socket, matchPlayer, pushMsgs) {
     socket.emit('server message', message(matchPlayer.id, pushMsgs));
     return msg;
 }
+function roomChange(exit, matchPlayer, pushMsgs) {
+    let dirFound = false;
+    switch (exit) {
+        case 'n':
+            exit = 'north';
+            break;
+        case 'e':
+            exit = 'east';
+            break;
+        case 's':
+            exit = 'south';
+            break;
+        case 'w':
+            exit = 'west';
+            break;
+        case 'u':
+            exit = 'up';
+            break;
+        case 'd':
+            exit = 'down';
+            break;
+        default:
+            break;
+    }
+    const exits = matchPlayer.room.exits;
+    for (let i = 0; i < exits.length; ++i) {
+        if (exit.match(exits[i]['dir'])) {
+            dirFound = true;
+            let newRoom = exits[i]['id'];
+            matchPlayer.room = rooms[newRoom];
+            prepush(pushMsgs, 'You exit to the ' + exits[i]['dir'] + '...');
+            prepush(pushMsgs, newRoomMessages(matchPlayer.room));
+            break;
+        }
+    }
+    return dirFound;
+}
 io.on('connection', function(socket){
     let id;
     console.log("Player connected.");
@@ -150,80 +187,14 @@ io.on('connection', function(socket){
                 socket.emit('server message', message(matchPlayer.id, pushMsgs));
             } else if(match = roomRe.exec(msg)) {
                 let exit = msg.slice(match[0].length + 1).toLowerCase();
-                switch(exit){
-                    case 'n':
-                        exit = 'north';
-                        break;
-                    case 'e':
-                        exit = 'east';
-                        break;
-                    case 's':
-                        exit = 'south';
-                        break;
-                    case 'w':
-                        exit = 'west';
-                        break;
-                    case 'u':
-                        exit = 'up';
-                        break;
-                    case 'd':
-                        exit = 'down';
-                        break;
-                    default:
-                        break;
-                }
-                const exits = matchPlayer.room.exits;
-                let dirFound = false;
-                for(let i = 0; i < exits.length; ++i){
-                    if(exit.match(exits[i]['dir'])){
-                        dirFound = true;
-                        let newRoom = exits[i]['id'];
-                        matchPlayer.room = rooms[newRoom];
-                        prepush(pushMsgs, 'You exit to the ' + exits[i]['dir'] + '...');
-                        prepush(pushMsgs, newRoomMessages(matchPlayer.room));
-                        break;
-                    }
-                }
+                let dirFound = roomChange(exit, matchPlayer, pushMsgs);
                 if(!dirFound){
                     prepush(pushMsgs, 'There is no exit in that direction.');
                 }
                 socket.emit('server message', message(matchPlayer.id, pushMsgs));
             } else {
-                let dirFound = false;
                 let exit = msg;
-                switch(exit){
-                    case 'n':
-                        exit = 'north';
-                        break;
-                    case 'e':
-                        exit = 'east';
-                        break;
-                    case 's':
-                        exit = 'south';
-                        break;
-                    case 'w':
-                        exit = 'west';
-                        break;
-                    case 'u':
-                        exit = 'up';
-                        break;
-                    case 'd':
-                        exit = 'down';
-                        break;
-                    default:
-                        break;
-                }
-                const exits = matchPlayer.room.exits;
-                for(let i = 0; i < exits.length; ++i){
-                    if(exit.match(exits[i]['dir'])){
-                        dirFound = true;
-                        let newRoom = exits[i]['id'];
-                        matchPlayer.room = rooms[newRoom];
-                        prepush(pushMsgs, 'You exit to the ' + exits[i]['dir'] + '...');
-                        prepush(pushMsgs, newRoomMessages(matchPlayer.room));
-                        break;
-                    }
-                }
+                let dirFound = roomChange(exit, matchPlayer, pushMsgs);
                 if(!dirFound) {
                     prepush(pushMsgs, 'Not understood. Try typing !help for basic commands.');
                 }
