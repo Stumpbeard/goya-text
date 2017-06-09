@@ -99,7 +99,7 @@ function speech(msg, socket, matchPlayer, pushMsgs) {
     socket.emit('server message', message(matchPlayer.id, pushMsgs));
     return msg;
 }
-function roomChange(exit, matchPlayer, pushMsgs) {
+function roomChange(exit, matchPlayer, pushMsgs, socket) {
     let dirFound = false;
     switch (exit) {
         case 'n':
@@ -135,6 +135,20 @@ function roomChange(exit, matchPlayer, pushMsgs) {
             }
             matchPlayer.room = newRoom.id;
             newRoom.entities.push(matchPlayer);
+            for(let key in connectedPlayers){
+                let player = connectedPlayers[key];
+                if(oldRoom.id === player.room){
+                    socket.broadcast.to(player.id).emit('server message', {messages: matchPlayer.name + ' exits to the ' + exit + '.'});
+                } else if (newRoom.id === player.room){
+                    let enterDir = '';
+                    for(let j = 0; j < newRoom.exits.length; ++j){
+                        if(newRoom.exits[j].id === oldRoom.id){
+                            enterDir = newRoom.exits[j].dir;
+                        }
+                    }
+                    socket.broadcast.to(player.id).emit('server message', {messages: matchPlayer.name + ' enters from the ' + enterDir + '.'});
+                }
+            }
             prepush(pushMsgs, 'You exit to the ' + exits[i]['dir'] + '...');
             prepush(pushMsgs, newRoomMessages(matchPlayer));
             break;
@@ -142,6 +156,7 @@ function roomChange(exit, matchPlayer, pushMsgs) {
     }
     return dirFound;
 }
+
 io.on('connection', function(socket){
     let id = socket.id;
     console.log("Player connected.");
@@ -193,14 +208,14 @@ io.on('connection', function(socket){
                 socket.emit('server message', message(matchPlayer.id, pushMsgs));
             } else if(match = roomRe.exec(msg)) {
                 let exit = msg.slice(match[0].length + 1).toLowerCase();
-                let dirFound = roomChange(exit, matchPlayer, pushMsgs);
+                let dirFound = roomChange(exit, matchPlayer, pushMsgs, socket);
                 if(!dirFound){
                     prepush(pushMsgs, 'There is no exit in that direction.');
                 }
                 socket.emit('server message', message(matchPlayer.id, pushMsgs));
             } else {
                 let exit = msg;
-                let dirFound = roomChange(exit, matchPlayer, pushMsgs);
+                let dirFound = roomChange(exit, matchPlayer, pushMsgs, socket);
                 if(!dirFound) {
                     prepush(pushMsgs, 'Not understood. Try typing !help for basic commands.');
                 }
