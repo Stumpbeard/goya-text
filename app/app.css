@@ -61,6 +61,26 @@ form > label {
     background: #333;
 }
 
+#title-fade {
+    position: absolute;
+    text-align: center;
+    z-index: 2;
+    font-size: 15em;
+    animation: titlefadeanim 2s 1;
+    color: rgba(255, 255, 255, 0);
+    visibility: hidden;
+}
+
+@keyframes titlefadeanim {
+    0% {
+        visibility: visible;
+        color: rgba(255, 255, 255, 1);
+    }
+    100% {
+        color: rgba(255, 255, 255, 0);
+    }
+}
+
 .game-area {
     padding: 5px;
     position: absolute;

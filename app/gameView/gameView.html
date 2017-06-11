@@ -1,4 +1,5 @@
 <div class="full-area">
+    <div id="title-fade">G   O   Y   A</div>
     <div class="player-count">
         {{numConnected}}
         <p ng-repeat="player in connectedPlayers track by $index">{{player.name}}</p>
@@ -7,6 +8,7 @@
         <img class="back-img" src="goya.jpg">
     </div>
     <div class="game-area">
+
         <div id="message-area" scroll-glue class="game-text">
             <p class="message" ng-repeat="msg in messages track by $index" ng-bind-html="asHtml(messages[$index])"></p>
         </div>
