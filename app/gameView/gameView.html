@@ -7,9 +7,10 @@
     <div class="img-container">
         <img class="back-img" src="goya.jpg">
     </div>
-    <div class="side-bar" id="player-info">
-        Filler Name<br/>
-        HP: 10/10
+    <div class="side-bar-container">
+        <div id="player-info" ng-class="{'side-bar': state.nameConfirmed, 'side-hidden': !state.nameConfirmed}">
+            <span ng-class="{'player-name': state.nameConfirmed}">Name: <strong>{{state.name}}</strong></span>
+        </div>
     </div>
     <div class="game-area">
         <div id="message-area" scroll-glue class="game-text">
@@ -20,7 +21,7 @@
             <input autofocus id="text-enter" ng-model="input">
         </form>
     </div>
-    <div class="side-bar" id="room-info">
+    <div id="room-info" class="side-hidden">
         I'M IN YOUR A-RE-UH
     </div>
 </div>
