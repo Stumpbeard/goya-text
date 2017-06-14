@@ -83,7 +83,7 @@ form > label {
 
 .game-area {
     padding: 5px;
-    position: absolute;
+    /*position: absolute;*/
     z-index: 0;
     display: flex;
     flex-flow: column nowrap;
@@ -94,6 +94,14 @@ form > label {
     max-width: 800px;
     max-height: 600px;
     overflow: hidden;
+}
+
+.side-bar {
+    height: 500px;
+    width: 200px;
+    padding: 5px;
+    background-color: #373737;
+    z-index: 1;
 }
 
 .full-area {
