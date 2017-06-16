@@ -17,7 +17,6 @@ let playerNames = {};
 
 function message(player, msg){
     connectedPlayers[player].roomContents = JSON.stringify(rooms[connectedPlayers[player].room]);
-    console.log(JSON.stringify(rooms[connectedPlayers[player].room]));
     return {state: connectedPlayers[player], messages: msg};
 }
 
@@ -177,7 +176,7 @@ function roomChange(exit, matchPlayer, pushMsgs, socket) {
 
 io.on('connection', function(socket){
     let id = socket.id;
-    console.log("Player connected.");
+    console.log("Player connected. Id: " + id);
     connectedPlayers[id] = {
         name: '',
         nameConfirmed: false,
@@ -246,6 +245,7 @@ io.on('connection', function(socket){
     });
 
     socket.on('disconnect', function(){
+        console.log(id + " has disconnected.");
         let pushMsgs = [];
         if(connectedPlayers[id].nameConfirmed === false){
             prepush(pushMsgs, 'A nameless spirit dissipates.');

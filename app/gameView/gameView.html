@@ -25,10 +25,8 @@
         <div id="room-info" ng-class="{'side-bar': state.nameConfirmed, 'side-hidden': !state.nameConfirmed}">
             <p ng-class="{'player-name': state.nameConfirmed}"><em>Title</em>: {{currentRoom.title}}</p>
             <p ng-class="{'player-name': state.nameConfirmed}"><em>Desc</em>: {{currentRoom.bDesc}}</p>
-            <p ng-class="{'player-name': state.nameConfirmed}"><em>Exits</em>:</p>
-            <div ng-class="{'player-name': state.nameConfirmed}">
-                <p ng-repeat="exit in currentRoom.exits">{{exit.dir}}</p>
-            </div>
+            <p ng-class="{'player-name': state.nameConfirmed}"><em>Exits</em>: {{exitsInRoom.join(', ')}}</p>
+            <p ng-class="{'player-name': state.nameConfirmed}"><em>Entities</em>: {{entsInRoom.join(', ')}}</p>
         </div>
     </div>
 </div>

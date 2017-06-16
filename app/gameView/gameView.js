@@ -12,6 +12,8 @@ angular.module('goya.gameView', ['ngRoute', 'goya.playerInfo'])
 
 .controller('GameCtrl', ['socket', '$scope', '$sce', 'playerInfo', function(socket, $scope, $sce, playerInfo) {
     $scope.currentRoom = {};
+    $scope.exitsInRoom = [];
+    $scope.entsInRoom = [];
     $scope.state = {
         name: '',
         nameConfirmed: false,
@@ -43,6 +45,19 @@ angular.module('goya.gameView', ['ngRoute', 'goya.playerInfo'])
         if(data.state !== undefined){
             $scope.state = data.state;
             $scope.currentRoom = JSON.parse(data.state.roomContents);
+            $scope.exitsInRoom = [];
+            for(let key in $scope.currentRoom.exits){
+                $scope.exitsInRoom.push($scope.currentRoom.exits[key].dir);
+            }
+            $scope.entsInRoom = [];
+            for(let i = 0; i < $scope.currentRoom.entities.length; ++i){
+                let name = $scope.currentRoom.entities[i].name;
+                if(name === $scope.state.name){
+                    name = 'You';
+                }
+                $scope.entsInRoom.push(name);
+            }
+            $scope.entsInRoom.sort();
         }
         $scope.messages = $scope.messages.concat(data.messages);
     });
