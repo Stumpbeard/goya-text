@@ -61,9 +61,29 @@ form > label {
     background: #333;
 }
 
+#title-fade {
+    position: absolute;
+    text-align: center;
+    z-index: 2;
+    font-size: 15em;
+    animation: titlefadeanim 2s 1;
+    color: rgba(255, 255, 255, 0);
+    visibility: hidden;
+}
+
+@keyframes titlefadeanim {
+    0% {
+        visibility: visible;
+        color: rgba(255, 255, 255, 1);
+    }
+    100% {
+        color: rgba(255, 255, 255, 0);
+    }
+}
+
 .game-area {
     padding: 5px;
-    position: absolute;
+    /*position: absolute;*/
     z-index: 0;
     display: flex;
     flex-flow: column nowrap;
@@ -74,6 +94,67 @@ form > label {
     max-width: 800px;
     max-height: 600px;
     overflow: hidden;
+}
+
+.side-bar {
+    height: 500px;
+    width: 200px;
+    animation: side-bar-reveal 0.5s 1;
+    padding: 5px;
+    background-color: #373737;
+    z-index: 1;
+}
+
+.player-name {
+    position: relative;
+    animation: text-reveal 1s 1;
+    height: auto;
+    width: auto;
+}
+
+@keyframes side-bar-reveal {
+    0% {
+        width: 0px;
+    }
+    100% {
+        width: 200px;
+    }
+}
+
+@keyframes text-reveal {
+    0% {
+        color: rgba(255, 255, 255, 0);
+        top: -50px;
+    }
+    50% {
+        color: rgba(255, 255, 255, 0);
+        top: -50px;
+    }
+    100% {
+        color: rgba(255, 255, 255, 1);
+        top: 0px;
+    }
+}
+
+.player-bar-container {
+    height: 500px;
+    width: 200px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.room-bar-container {
+    display: flex;
+    justify-content: flex-start;
+    height: 500px;
+    width: 200px;
+}
+
+.side-hidden {
+    height: 500px;
+    width: 200px;
+    padding: 5px;
+    visibility: hidden;
 }
 
 .full-area {

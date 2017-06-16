@@ -1,10 +1,16 @@
 <div class="full-area">
+    <div id="title-fade">G   O   Y   A</div>
     <div class="player-count">
         {{numConnected}}
         <p ng-repeat="player in connectedPlayers track by $index">{{player.name}}</p>
     </div>
     <div class="img-container">
         <img class="back-img" src="goya.jpg">
+    </div>
+    <div class="player-bar-container">
+        <div id="player-info" ng-class="{'side-bar': state.nameConfirmed, 'side-hidden': !state.nameConfirmed}">
+            <p ng-class="{'player-name': state.nameConfirmed}"><em>Name</em>: {{state.name}}</p>
+        </div>
     </div>
     <div class="game-area">
         <div id="message-area" scroll-glue class="game-text">
@@ -14,5 +20,13 @@
             <label for="text-enter"><pre>&gt; </pre></label>
             <input autofocus id="text-enter" ng-model="input">
         </form>
+    </div>
+    <div class="room-bar-container">
+        <div id="room-info" ng-class="{'side-bar': state.nameConfirmed, 'side-hidden': !state.nameConfirmed}">
+            <p ng-class="{'player-name': state.nameConfirmed}"><em>Title</em>: {{currentRoom.title}}</p>
+            <p ng-class="{'player-name': state.nameConfirmed}"><em>Desc</em>: {{currentRoom.bDesc}}</p>
+            <p ng-class="{'player-name': state.nameConfirmed}"><em>Exits</em>: {{exitsInRoom.join(', ')}}</p>
+            <p ng-class="{'player-name': state.nameConfirmed}"><em>Entities</em>: {{entsInRoom.join(', ')}}</p>
+        </div>
     </div>
 </div>

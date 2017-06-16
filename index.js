@@ -16,6 +16,7 @@ let connectedPlayers = {};
 let playerNames = {};
 
 function message(player, msg){
+    connectedPlayers[player].roomContents = JSON.stringify(rooms[connectedPlayers[player].room]);
     return {state: connectedPlayers[player], messages: msg};
 }
 
@@ -58,7 +59,7 @@ function nameSetting(incPlayer, pushMsgs, msg, socket, matchPlayer, id) {
             playerNames[id].name = matchPlayer.name;
             io.emit('update players', playerNames);
             matchPlayer.room = rooms[0].id;
-            rooms[0].entities.push(matchPlayer);
+            rooms[0].entities.push(playerNames[matchPlayer.id]);
             prepush(pushMsgs, "Your body takes shape...");
             prepush(pushMsgs, newRoomMessages(matchPlayer));
             socket.emit('server message', message(matchPlayer.id, pushMsgs));
@@ -143,16 +144,17 @@ function roomChange(exit, matchPlayer, pushMsgs, socket) {
             dirFound = true;
             let oldRoom = rooms[matchPlayer.room];
             let newRoom = rooms[exits[i]['id']];
-            let index = oldRoom.entities.indexOf(matchPlayer);
+            let index = oldRoom.entities.indexOf(playerNames[matchPlayer.id]);
             if(index > -1){
                 oldRoom.entities.splice(index, 1);
             }
             matchPlayer.room = newRoom.id;
-            newRoom.entities.push(matchPlayer);
+            newRoom.entities.push(playerNames[matchPlayer.id]);
             for(let key in connectedPlayers){
                 let player = connectedPlayers[key];
                 if(oldRoom.id === player.room){
-                    socket.broadcast.to(player.id).emit('server message', {messages: matchPlayer.name + ' exits to the ' + exit + '.'});
+                    prepush(pushMsgs, matchPlayer.name + ' exits to the ' + exit + '.');
+                    socket.broadcast.to(player.id).emit('server message', message(player.id, pushMsgs));
                 } else if (newRoom.id === player.room){
                     let enterDir = '';
                     for(let j = 0; j < newRoom.exits.length; ++j){
@@ -160,7 +162,8 @@ function roomChange(exit, matchPlayer, pushMsgs, socket) {
                             enterDir = newRoom.exits[j].dir;
                         }
                     }
-                    socket.broadcast.to(player.id).emit('server message', {messages: matchPlayer.name + ' enters from the ' + enterDir + '.'});
+                    prepush(pushMsgs, matchPlayer.name + ' enters from the ' + enterDir + '.');
+                    socket.broadcast.to(player.id).emit('server message', message(player.id, pushMsgs));
                 }
             }
             prepush(pushMsgs, 'You exit to the ' + exits[i]['dir'] + '...');
@@ -173,12 +176,13 @@ function roomChange(exit, matchPlayer, pushMsgs, socket) {
 
 io.on('connection', function(socket){
     let id = socket.id;
-    console.log("Player connected.");
+    console.log("Player connected. Id: " + id);
     connectedPlayers[id] = {
         name: '',
         nameConfirmed: false,
         id: id,
-        room: {}
+        room: 0,
+        roomContents: JSON.stringify('')
     };
     playerNames[id] = {
         name: ''
@@ -241,6 +245,7 @@ io.on('connection', function(socket){
     });
 
     socket.on('disconnect', function(){
+        console.log(id + " has disconnected.");
         let pushMsgs = [];
         if(connectedPlayers[id].nameConfirmed === false){
             prepush(pushMsgs, 'A nameless spirit dissipates.');
@@ -249,7 +254,7 @@ io.on('connection', function(socket){
         }
         for(let key in rooms){
             let room = rooms[key];
-            let playerIndex = room.entities.indexOf(connectedPlayers[id]);
+            let playerIndex = room.entities.indexOf(playerNames[id]);
             if(playerIndex > -1){
                 room.entities.splice(playerIndex, 1);
             }
@@ -259,54 +264,6 @@ io.on('connection', function(socket){
         io.emit('update players', playerNames);
         io.emit('server message', {messages: pushMsgs});
     });
-    // socket.on('register', function(msg){
-    //     id = msg;
-    //     connectedPlayers[id] = {
-    //         "name": undefined
-    //     }
-    //     io.emit('update players', connectedPlayers);
-    // });
-    // io.emit('update players', connectedPlayers);
-    // socket.broadcast.emit('new player');
-    // socket.on('player speech', function(data){
-    //     var cleaned = escapeHtml(data.msg);
-    //     if (cleaned === ""){
-    //         return;
-    //     }
-    //     cleaned = cleaned[0].toUpperCase() + cleaned.slice(1);
-    //     if (!(cleaned[cleaned.length - 1] === '.' || cleaned[cleaned.length - 1] === '?' || cleaned[cleaned.length - 1] === '!')){
-    //         cleaned = cleaned + '.';
-    //     }
-    //     var punct = cleaned[cleaned.length - 1];
-    //     var speechWord = "";
-    //     switch(punct){
-    //         case '?':
-    //             speechWord = "asks";
-    //             break;
-    //         case '!':
-    //             speechWord = "shouts";
-    //             break;
-    //         default:
-    //             speechWord = "says";
-    //             break;
-    //     }
-    //     socket.broadcast.emit('rec speech', data.name + " " + speechWord + ", \"" + cleaned + "\"");
-    // });
-    // socket.on('confirmed named', function(name){
-    //     connectedPlayers[id].name = name;
-    //     io.emit('update players', connectedPlayers);
-    //     socket.broadcast.emit('server message', "A spirit takes form as " + name + ".");
-    // });
-    //
-    // socket.on('disconnect', function(){
-    //     if (connectedPlayers[id].name === undefined){
-    //         io.emit('disconnect message', "An unformed spirit has dissipated.");
-    //     } else {
-    //         io.emit('disconnect message', connectedPlayers[id].name + " has left.");
-    //     }
-    //     delete connectedPlayers[id];
-    //     io.emit('update players', connectedPlayers);
-    // })
 });
 
 const intro = ['Welcome.', 'What\'s your name?'];

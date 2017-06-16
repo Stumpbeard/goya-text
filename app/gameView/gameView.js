@@ -12,11 +12,14 @@ angular.module('goya.gameView', ['ngRoute', 'goya.playerInfo'])
 
 .controller('GameCtrl', ['socket', '$scope', '$sce', 'playerInfo', function(socket, $scope, $sce, playerInfo) {
     $scope.currentRoom = {};
+    $scope.exitsInRoom = [];
+    $scope.entsInRoom = [];
     $scope.state = {
         name: '',
         nameConfirmed: false,
         id: -1,
-        room: $scope.currentRoom
+        room: 0,
+        roomContents: JSON.stringify('')
     };
 
     $scope.messages = [];
@@ -41,6 +44,20 @@ angular.module('goya.gameView', ['ngRoute', 'goya.playerInfo'])
     socket.on('server message', function(data){
         if(data.state !== undefined){
             $scope.state = data.state;
+            $scope.currentRoom = JSON.parse(data.state.roomContents);
+            $scope.exitsInRoom = [];
+            for(let key in $scope.currentRoom.exits){
+                $scope.exitsInRoom.push($scope.currentRoom.exits[key].dir);
+            }
+            $scope.entsInRoom = [];
+            for(let i = 0; i < $scope.currentRoom.entities.length; ++i){
+                let name = $scope.currentRoom.entities[i].name;
+                if(name === $scope.state.name){
+                    name = 'You';
+                }
+                $scope.entsInRoom.push(name);
+            }
+            $scope.entsInRoom.sort();
         }
         $scope.messages = $scope.messages.concat(data.messages);
     });
@@ -49,103 +66,6 @@ angular.module('goya.gameView', ['ngRoute', 'goya.playerInfo'])
         $scope.connectedPlayers = data;
         $scope.numConnected = Object.keys($scope.connectedPlayers).length;
     });
-
-    // socket.on('ask name', function(){
-    //     $scope.messages.push("Welcome to the game.");
-    //     $scope.messages.push("What's your name?");
-    //     socket.emit('register', Math.random());
-    // });
-    //
-    // socket.on('rec speech', function(msg){
-    //     $scope.messages.push(msg);
-    // });
-    //
-    // socket.on('new player', function(msg){
-    //     $scope.messages.push("A new spirit manifests.");
-    // });
-    //
-    // socket.on('update players', function(data){
-    //     $scope.connectedPlayers = data;
-    //     $scope.numConnected = Object.keys($scope.connectedPlayers).length;
-    // });
-    //
-    // socket.on('disconnect message', function(msg){
-    //     $scope.messages.push(msg);
-    // });
-    //
-    // socket.on('server message', function(msg){
-    //     $scope.messages.push(msg);
-    // });
-    //
-    // $scope.potentialName = "";
-    // $scope.nameEntered = false;
-    //
-    // $scope.nameSubmission = function(){
-    //     $scope.messages.push("> " + $scope.input);
-    //     if($scope.askingName){
-    //         $scope.potentialName = toTitleCase($scope.input);
-    //         $scope.messages.push("Your name is " + $scope.potentialName + "? Are you sure? &lt;y/n&gt;");
-    //         $scope.askingName = false;
-    //         $scope.confirmingName = true;
-    //         $scope.input = "";
-    //         return;
-    //     }
-    //     else if($scope.confirmingName){
-    //         if($scope.input === 'y' || $scope.input === 'Y'){
-    //             playerInfo.name = $scope.potentialName;
-    //             $scope.messages.push("Alright. Welcome, " + playerInfo.name + ".");
-    //             $scope.messages.push("You may now speak.");
-    //             socket.emit('confirmed named', $scope.potentialName);
-    //             $scope.input = "";
-    //             $scope.confirmingName = false;
-    //             $scope.nameEntered = true;
-    //             return;
-    //         } else {
-    //             playerInfo.name = $scope.potentialName;
-    //             $scope.messages.push("Alright.");
-    //             $scope.messages.push("What's your name?");
-    //             $scope.confirmingName = false;
-    //             $scope.askingName = true;
-    //             $scope.input = "";
-    //             return;
-    //         }
-    //     }
-    // }
-    //
-    // $scope.chatSubmit = function(){
-    //     if($scope.input === ""){
-    //         return;
-    //     }
-    //     $scope.input = $scope.input[0].toUpperCase() + $scope.input.slice(1);
-    //     if (!($scope.input[$scope.input.length - 1] === '.' || $scope.input[$scope.input.length - 1] === '?' || $scope.input[$scope.input.length - 1] === '!')){
-    //         $scope.input = $scope.input + '.';
-    //     }
-    //     var punct = $scope.input[$scope.input.length - 1];
-    //     var speechWord = "";
-    //     switch(punct){
-    //         case '?':
-    //             speechWord = "ask";
-    //             break;
-    //         case '!':
-    //             speechWord = "shout";
-    //             break;
-    //         default:
-    //             speechWord = "say";
-    //             break;
-    //     }
-    //     $scope.messages.push("You " + speechWord + ", \"" + $scope.input + "\"");
-    //     socket.emit('player speech', {name: playerInfo.name, msg: $scope.input});
-    //     $scope.input = "";
-    // }
-    //
-    // $scope.input = "";
-    // $scope.submit = function(){
-    //     if (!$scope.nameEntered){
-    //         $scope.nameSubmission();
-    //     } else if ($scope.nameEntered){
-    //         $scope.chatSubmit();
-    //     }
-    // }
 
     $scope.asHtml = function(msg){
         return $sce.trustAsHtml(msg);
