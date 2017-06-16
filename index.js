@@ -58,6 +58,7 @@ function nameSetting(incPlayer, pushMsgs, msg, socket, matchPlayer, id) {
             playerNames[id].name = matchPlayer.name;
             io.emit('update players', playerNames);
             matchPlayer.room = rooms[0].id;
+            matchPlayer.roomContents = JSON.stringify(rooms[0]);
             rooms[0].entities.push(matchPlayer);
             prepush(pushMsgs, "Your body takes shape...");
             prepush(pushMsgs, newRoomMessages(matchPlayer));
@@ -148,6 +149,7 @@ function roomChange(exit, matchPlayer, pushMsgs, socket) {
                 oldRoom.entities.splice(index, 1);
             }
             matchPlayer.room = newRoom.id;
+            matchPlayer.room = JSON.stringify(newRoom);
             newRoom.entities.push(matchPlayer);
             for(let key in connectedPlayers){
                 let player = connectedPlayers[key];
@@ -178,7 +180,8 @@ io.on('connection', function(socket){
         name: '',
         nameConfirmed: false,
         id: id,
-        room: {}
+        room: {},
+        roomContents: JSON.stringify('')
     };
     playerNames[id] = {
         name: ''

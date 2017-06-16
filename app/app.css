@@ -103,13 +103,12 @@ form > label {
     padding: 5px;
     background-color: #373737;
     z-index: 1;
-    float: right;
 }
 
 .player-name {
     position: relative;
     white-space: pre;
-    animation: name-fade 1s 1;
+    animation: text-reveal 1s 1;
 }
 
 @keyframes side-bar-reveal {
@@ -121,7 +120,7 @@ form > label {
     }
 }
 
-@keyframes name-fade {
+@keyframes text-reveal {
     0% {
         color: rgba(255, 255, 255, 0);
         top: -50px;
@@ -136,7 +135,16 @@ form > label {
     }
 }
 
-.side-bar-container {
+.player-bar-container {
+    height: 500px;
+    width: 200px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.room-bar-container {
+    display: flex;
+    justify-content: flex-start;
     height: 500px;
     width: 200px;
 }

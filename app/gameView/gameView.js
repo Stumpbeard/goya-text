@@ -16,7 +16,8 @@ angular.module('goya.gameView', ['ngRoute', 'goya.playerInfo'])
         name: '',
         nameConfirmed: false,
         id: -1,
-        room: $scope.currentRoom
+        room: $scope.currentRoom,
+        roomContents: JSON.stringify('')
     };
 
     $scope.messages = [];
@@ -41,6 +42,8 @@ angular.module('goya.gameView', ['ngRoute', 'goya.playerInfo'])
     socket.on('server message', function(data){
         if(data.state !== undefined){
             $scope.state = data.state;
+            $scope.currentRoom = JSON.parse(data.state.roomContents);
+            console.log(data.state.roomContents);
         }
         $scope.messages = $scope.messages.concat(data.messages);
     });

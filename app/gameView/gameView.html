@@ -7,7 +7,7 @@
     <div class="img-container">
         <img class="back-img" src="goya.jpg">
     </div>
-    <div class="side-bar-container">
+    <div class="player-bar-container">
         <div id="player-info" ng-class="{'side-bar': state.nameConfirmed, 'side-hidden': !state.nameConfirmed}">
             <span ng-class="{'player-name': state.nameConfirmed}">Name: <strong>{{state.name}}</strong></span>
         </div>
@@ -21,7 +21,13 @@
             <input autofocus id="text-enter" ng-model="input">
         </form>
     </div>
-    <div id="room-info" class="side-hidden">
-        I'M IN YOUR A-RE-UH
+    <div class="room-bar-container">
+        <div id="room-info" ng-class="{'side-bar': state.nameConfirmed, 'side-hidden': !state.nameConfirmed}">
+            <p ng-class="{'player-name': state.nameConfirmed}">Title: {{currentRoom.title}}</p>
+            <p ng-class="{'player-name': state.nameConfirmed}">Desc: {{currentRoom.bDesc}}</p>
+            <p ng-class="{'player-name': state.nameConfirmed}">Exits:<br/>
+            <pre ng-repeat="exit in currentRoom.exits">    {{exit.dir}}</pre>
+            </p>
+        </div>
     </div>
 </div>
