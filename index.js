@@ -16,6 +16,7 @@ let connectedPlayers = {};
 let playerNames = {};
 
 function message(player, msg){
+    connectedPlayers[player].roomContents = JSON.stringify(rooms[connectedPlayers[player].room]);
     return {state: connectedPlayers[player], messages: msg};
 }
 
@@ -58,7 +59,6 @@ function nameSetting(incPlayer, pushMsgs, msg, socket, matchPlayer, id) {
             playerNames[id].name = matchPlayer.name;
             io.emit('update players', playerNames);
             matchPlayer.room = rooms[0].id;
-            matchPlayer.roomContents = JSON.stringify(rooms[0]);
             rooms[0].entities.push(matchPlayer);
             prepush(pushMsgs, "Your body takes shape...");
             prepush(pushMsgs, newRoomMessages(matchPlayer));
@@ -149,7 +149,6 @@ function roomChange(exit, matchPlayer, pushMsgs, socket) {
                 oldRoom.entities.splice(index, 1);
             }
             matchPlayer.room = newRoom.id;
-            matchPlayer.room = JSON.stringify(newRoom);
             newRoom.entities.push(matchPlayer);
             for(let key in connectedPlayers){
                 let player = connectedPlayers[key];
@@ -180,7 +179,7 @@ io.on('connection', function(socket){
         name: '',
         nameConfirmed: false,
         id: id,
-        room: {},
+        room: 0,
         roomContents: JSON.stringify('')
     };
     playerNames[id] = {
@@ -262,54 +261,6 @@ io.on('connection', function(socket){
         io.emit('update players', playerNames);
         io.emit('server message', {messages: pushMsgs});
     });
-    // socket.on('register', function(msg){
-    //     id = msg;
-    //     connectedPlayers[id] = {
-    //         "name": undefined
-    //     }
-    //     io.emit('update players', connectedPlayers);
-    // });
-    // io.emit('update players', connectedPlayers);
-    // socket.broadcast.emit('new player');
-    // socket.on('player speech', function(data){
-    //     var cleaned = escapeHtml(data.msg);
-    //     if (cleaned === ""){
-    //         return;
-    //     }
-    //     cleaned = cleaned[0].toUpperCase() + cleaned.slice(1);
-    //     if (!(cleaned[cleaned.length - 1] === '.' || cleaned[cleaned.length - 1] === '?' || cleaned[cleaned.length - 1] === '!')){
-    //         cleaned = cleaned + '.';
-    //     }
-    //     var punct = cleaned[cleaned.length - 1];
-    //     var speechWord = "";
-    //     switch(punct){
-    //         case '?':
-    //             speechWord = "asks";
-    //             break;
-    //         case '!':
-    //             speechWord = "shouts";
-    //             break;
-    //         default:
-    //             speechWord = "says";
-    //             break;
-    //     }
-    //     socket.broadcast.emit('rec speech', data.name + " " + speechWord + ", \"" + cleaned + "\"");
-    // });
-    // socket.on('confirmed named', function(name){
-    //     connectedPlayers[id].name = name;
-    //     io.emit('update players', connectedPlayers);
-    //     socket.broadcast.emit('server message', "A spirit takes form as " + name + ".");
-    // });
-    //
-    // socket.on('disconnect', function(){
-    //     if (connectedPlayers[id].name === undefined){
-    //         io.emit('disconnect message', "An unformed spirit has dissipated.");
-    //     } else {
-    //         io.emit('disconnect message', connectedPlayers[id].name + " has left.");
-    //     }
-    //     delete connectedPlayers[id];
-    //     io.emit('update players', connectedPlayers);
-    // })
 });
 
 const intro = ['Welcome.', 'What\'s your name?'];

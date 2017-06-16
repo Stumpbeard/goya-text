@@ -107,8 +107,9 @@ form > label {
 
 .player-name {
     position: relative;
-    white-space: pre;
     animation: text-reveal 1s 1;
+    height: auto;
+    width: auto;
 }
 
 @keyframes side-bar-reveal {

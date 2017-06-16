@@ -9,7 +9,7 @@
     </div>
     <div class="player-bar-container">
         <div id="player-info" ng-class="{'side-bar': state.nameConfirmed, 'side-hidden': !state.nameConfirmed}">
-            <span ng-class="{'player-name': state.nameConfirmed}">Name: <strong>{{state.name}}</strong></span>
+            <p ng-class="{'player-name': state.nameConfirmed}"><em>Name</em>: {{state.name}}</p>
         </div>
     </div>
     <div class="game-area">
@@ -23,11 +23,12 @@
     </div>
     <div class="room-bar-container">
         <div id="room-info" ng-class="{'side-bar': state.nameConfirmed, 'side-hidden': !state.nameConfirmed}">
-            <p ng-class="{'player-name': state.nameConfirmed}">Title: {{currentRoom.title}}</p>
-            <p ng-class="{'player-name': state.nameConfirmed}">Desc: {{currentRoom.bDesc}}</p>
-            <p ng-class="{'player-name': state.nameConfirmed}">Exits:<br/>
-            <pre ng-repeat="exit in currentRoom.exits">    {{exit.dir}}</pre>
-            </p>
+            <p ng-class="{'player-name': state.nameConfirmed}"><em>Title</em>: {{currentRoom.title}}</p>
+            <p ng-class="{'player-name': state.nameConfirmed}"><em>Desc</em>: {{currentRoom.bDesc}}</p>
+            <p ng-class="{'player-name': state.nameConfirmed}"><em>Exits</em>:</p>
+            <div ng-class="{'player-name': state.nameConfirmed}">
+                <p ng-repeat="exit in currentRoom.exits">{{exit.dir}}</p>
+            </div>
         </div>
     </div>
 </div>
