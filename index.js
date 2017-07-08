@@ -9,6 +9,19 @@ const io = require('socket.io')(http);
 const helper = require('./helper-functions.js');
 const parse = require('./message-parsing.js');
 
+const pg = require('pg');
+pg.defaults.ssl = true;
+pg.connect(process.env.DATABASE_URL, function(err, client) {
+    if (err) throw err;
+    console.log('Connected to postgres! Getting schemas...');
+
+    client
+        .query('SELECT table_schema,table_name FROM information_schema.tables;')
+        .on('row', function(row) {
+            console.log(JSON.stringify(row));
+        });
+});
+
 const port = process.env.PORT || 8000;
 http.listen(port);
 
@@ -98,6 +111,13 @@ io.on('connection', function(socket){
                 }
                 socket.emit('server message', helper.msgPackage(matchPlayer.id, pushMsgs));
             }
+            pg.connect(process.env.DATABASE_URL, function(err, client) {
+                if (err) throw err;
+
+                let params = [matchPlayer.name, matchPlayer.id, msg];
+                let sql = 'INSERT INTO chatlog (username, player_id, message, time) VALUES ($1, $2, $3, current_timestamp);';
+                client.query(sql, params);
+            });
         } else {
             parse.nameSetting(incPlayer, pushMsgs, msg, socket, io, matchPlayer, id);
         }
