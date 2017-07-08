@@ -14,12 +14,6 @@ pg.defaults.ssl = true;
 pg.connect(process.env.DATABASE_URL, function(err, client) {
     if (err) throw err;
     console.log('Connected to postgres! Getting schemas...');
-
-    client
-        .query('SELECT table_schema,table_name FROM information_schema.tables;')
-        .on('row', function(row) {
-            console.log(JSON.stringify(row));
-        });
 });
 
 const port = process.env.PORT || 8000;
@@ -81,6 +75,7 @@ io.on('connection', function(socket){
 
         }
         let msg = escapeHtml(data.msg);
+        msg = msg.trim();
         let msgWords = msg.split(' ');
         msgWords[0] = msgWords[0].toLowerCase();
         msg = msgWords.join(' ');
@@ -152,8 +147,10 @@ const roomRe = /^go|^walk|^exit/;
 
 function escapeHtml(unsafe) {
     return unsafe
-         .replace(/&/g, "")
-         .replace(/</g, "")
-         .replace(/>/g, "")
-         .replace(/"/g, "");
+        .replace(/&/g, "")
+        .replace(/</g, "")
+        .replace(/>/g, "")
+        .replace(/"/g, "")
+        .replace(/\[/g, "")
+        .replace(/]/g, "");
 }
