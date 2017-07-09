@@ -72,7 +72,7 @@ io.on('connection', function(socket){
                     console.log('typeof ' + key + ' = ' + typeof(matchPlayer[key]));
                 }
             }
-
+            return;
         }
         let msg = escapeHtml(data.msg);
         msg = msg.trim();
