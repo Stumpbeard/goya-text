@@ -82,7 +82,7 @@ form > label {
 }
 
 .game-area {
-    padding: 5px;
+    padding: 10px;
     /*position: absolute;*/
     z-index: 0;
     display: flex;
